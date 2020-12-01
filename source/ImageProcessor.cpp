@@ -3,9 +3,9 @@
 using namespace cv;
 using namespace std;
 
-ImageProcessor::ImageProcessor()
+ImageProcessor::ImageProcessor(std::string img_path)
 {
-  original_img = imread (IMAGE_DIRECTORY_PATH, IMREAD_COLOR);
+  original_img = imread (img_path, IMREAD_COLOR);
 }
 
 ImageProcessor::~ImageProcessor()
@@ -42,6 +42,7 @@ void ImageProcessor::getMask()
 {
   Mat blur_img;
   GaussianBlur(warped_img, blur_img, Size(11, 11), 0);
+  //GaussianBlur(original_img, blur_img, Size(11, 11), 0);
   Mat hsv_img;
   cvtColor(blur_img, hsv_img, COLOR_BGR2HSV);
   inRange(hsv_img, Scalar(LOWER_YELLOW_1, LOWER_YELLOW_2, LOWER_YELLOW_3),
@@ -61,6 +62,7 @@ void ImageProcessor::getResultImage()
   rect.points( rect_points );
   path_angle = rect.angle;
   path_center = rect.center;
+  width = result_img.cols;
 
   // draw rotated rect
   for(unsigned int j=0; j<4; ++j)
@@ -70,9 +72,10 @@ void ImageProcessor::getResultImage()
 void ImageProcessor::printAll() 
 {
   stringstream ss;   ss << path_angle; // convert float to string
-  circle(result_img, path_center, 5, cv::Scalar(0,255,0)); // draw center
-  putText(result_img, ss.str(), path_center + cv::Point2f(-25,25), cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(255,0,255)); // print angle
-  
+  circle(result_img, path_center, 5, cv::Scalar(10,255,100),5); // draw center
+  putText(result_img, ss.str(), path_center + cv::Point2f(-25,25), cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(0,100,255)); // print angle
+  int dist = int(width/2) - path_center.x;
+  std::cout << "Image x center: " << int(width/2) << " \nRect x center: " << path_center.x << " \nDist: " << dist << std::endl;
   imshow("Original", original_img);
   imshow("Warped", warped_img);
   imshow("Mask", mask_img);

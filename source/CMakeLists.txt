@@ -1,11 +1,11 @@
 #Cmake version
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.5)
 
 #Debug
 set(CMAKE_BUILD_TYPE Debug)
 
 #Project Name
-project(robitca_movel)
+project(path_follower)
 
 #Include path
 include_directories(../source)
@@ -19,5 +19,5 @@ file(GLOB SOURCES
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
-add_executable(robitca_movel ${SOURCES})
-target_link_libraries( robitca_movel ${OpenCV_LIBS} )
+add_executable(path_follower ${SOURCES})
+target_link_libraries( path_follower ${OpenCV_LIBS} )

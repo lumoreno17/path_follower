@@ -6,8 +6,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 
-#define IMAGE_DIRECTORY_PATH "../images/linha_pespec.jpg"
-
 #define LOWER_YELLOW_1 10
 #define LOWER_YELLOW_2 50
 #define LOWER_YELLOW_3 0
@@ -22,7 +20,7 @@ using namespace std;
 class ImageProcessor
 {
 public:
-  ImageProcessor();
+  ImageProcessor(std::string img_path);
   ~ImageProcessor();
   Mat original_img, warped_img, mask_img, result_img;
   int width, height;
