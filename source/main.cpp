@@ -40,17 +40,18 @@ int main(int argc, char *argv[])
   simxGetObjectHandle(clientID,"Vision_sensor", &camera, simx_opmode_blocking);
   simxGetVisionSensorImage(clientID,camera,resolution,&image,0,simx_opmode_streaming);
   
-  simxSetJointTargetVelocity(clientID, left_motor, 1.0f, simx_opmode_blocking);
-  simxSetJointTargetVelocity(clientID, right_motor, 1.0f, simx_opmode_blocking);
+  simxSetJointTargetVelocity(clientID, left_motor, 0.0f, simx_opmode_blocking);
+  simxSetJointTargetVelocity(clientID, right_motor, 0.0f, simx_opmode_blocking);
   int iteracoes = 0;
-  while (simxGetConnectionId(clientID)!=-1 && iteracoes < 30)
+  while (simxGetConnectionId(clientID)!=-1 && iteracoes < 10e3)
   {
-    std::cout << "Iteracao: " << iteracoes << std::endl;
     int ret = simxGetVisionSensorImage(clientID,camera,resolution,&image,0,simx_opmode_buffer);
     iteracoes++;
-    std::this_thread::sleep_for (std::chrono::seconds(1));
+    //std::this_thread::sleep_for (std::chrono::seconds(1));
     if (ret != simx_return_ok) {
-      std::cout << "[SIMULATION ERROR] - interacao " << iteracoes << std::endl;
+      #ifdef DEBUG
+        std::cout << "[SIMULATION ERROR] - interacao " << iteracoes << std::endl;
+      #endif
 			continue;
 		}
     cv::Mat channel(resolution[0], resolution[1], CV_8UC3, image);
@@ -63,11 +64,16 @@ int main(int argc, char *argv[])
     int dist;
     float angle;
     img_processor.getOutput(dist, angle);
-    std::cout << "[DEBUG] dist_diff: " << dist << "  path_angle: " << angle << std::endl;
+    #ifdef DEBUG
+      std::cout << "[DEBUG] dist_diff: " << dist << "  path_angle: " << angle << std::endl;
+    #endif
     /*Controller*/
-    /*std::vector<float> Ww = controller.speed_control(float(dist), angle, 2);
-    simxSetJointTargetVelocity(clientID, left_motor, Ww[2], simx_opmode_blocking);
-    simxSetJointTargetVelocity(clientID, right_motor, Ww[1], simx_opmode_blocking);*/
+    std::vector<float> Ww = controller.speed_control(float(dist), angle, 1);
+    #ifdef DEBUG
+      std::cout << "[DEBUG] W_right: " << Ww[0] << "  W_left:: " << Ww[1] << std::endl;
+    #endif
+    simxSetJointTargetVelocity(clientID, left_motor, Ww[1], simx_opmode_blocking);
+    simxSetJointTargetVelocity(clientID, right_motor, Ww[0], simx_opmode_blocking);
 
 		//cv::imshow( "original img",channel);
     cv::imshow( "Processed img",processed_img);

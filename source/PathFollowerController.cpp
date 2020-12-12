@@ -6,6 +6,9 @@ PathFollowerController::PathFollowerController()
 {
   m_derivator = 0;
   m_integrator = 0; 
+  R = 0.3;
+  L = 0.331;
+  V = 0.25;
 }
 
 PathFollowerController::~PathFollowerController()
@@ -15,16 +18,21 @@ PathFollowerController::~PathFollowerController()
 
 std::vector<float> PathFollowerController::speed_control(float distance_diff, float angle, float K)
 {
-  float w1 = 0.5;
-  float w2 = 0.7;
-  float error_input = w1 * distance_diff + w2*angle;
+  float rad_angle  = angle*M_PI/180;
+  float w1 = 1e-2;
+  float w2 = 1;
+  float error_input = w1 * distance_diff + w2*rad_angle;
   float W = K*error_input;
   return calcWheelsSpeed(V, W);
 }
 
 std::vector<float> PathFollowerController::calcWheelsSpeed(float V, float W)
 {
-  return std::vector<float>();
+  std::vector<float> out(2,0.0f);
+  out[0] = (V/R) + ((L*W)/(2*R));
+  out[1] = (V/R) - ((L*W)/(2*R));
+
+  return out;
 }
 
 float PathFollowerController::PIDController(float error)

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <iostream>
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
@@ -14,7 +15,7 @@ public:
   ~PathFollowerController();
   float m_max_speed, m_min_speed, m_w_right, m_w_left, m_w_robot, m_v_robot, m_PID;
   float m_derivator, m_integrator, m_max_integrator, m_min_integrator, m_Kp, m_Kd, m_Ki;
-  float V;
+  float V, R, L;
 
   std::vector<float> speed_control(float distance_diff, float angular_diff, float K);
   std::vector<float> calcWheelsSpeed(float V, float W);
