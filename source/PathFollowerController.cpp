@@ -19,7 +19,7 @@ PathFollowerController::~PathFollowerController()
 std::vector<float> PathFollowerController::speed_control(float distance_diff, float angle, float K)
 {
   float rad_angle  = angle*M_PI/180;
-  float w1 = 1e-2;
+  float w1 = 4e-2;
   float w2 = 1;
   float error_input = w1 * distance_diff + w2*rad_angle;
   float W = K*error_input;

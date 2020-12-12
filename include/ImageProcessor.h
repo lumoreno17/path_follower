@@ -32,6 +32,7 @@ public:
   Point2f path_center;
   bool warped_flag;
 
+  std::vector<std::vector<float>> sortPoints(std::vector<float> array_y, std::vector<float> array_x);
   void getWarpedImage(cv::Mat image,int offset_x, int offset_y, int offset_x_dst);
   void getMask(cv::Mat input_img);
   bool getResultImage(cv::Mat input_img);

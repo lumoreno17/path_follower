@@ -68,11 +68,19 @@ bool ImageProcessor::getResultImage(cv::Mat input_img)
   path_angle = rect.angle;
   path_center = rect.center;
   width = result_img.cols;
+  
+  std::vector<float> y_values(4,0.0f);
+  std::vector<float> x_values(4,0.0f);
+  std::vector<std::vector<float>> controller_points;
 
   // draw rotated rect
   for(unsigned int j=0; j<4; ++j)
-      cv::line(result_img, rect_points[j], rect_points[(j+1)%4], cv::Scalar(0,0,255), 3);
-
+  {
+    cv::line(result_img, rect_points[j], rect_points[(j+1)%4], cv::Scalar(0,0,255), 3);
+    y_values[j] = rect_points[j].y;
+    x_values[j] = rect_points[j].x;
+  }
+      
   if(rect.size.width < rect.size.height)
     path_angle = -path_angle;
   else
@@ -80,8 +88,18 @@ bool ImageProcessor::getResultImage(cv::Mat input_img)
 
   stringstream ss;   ss << path_angle; // convert float to string
   circle(result_img, path_center, 5, cv::Scalar(10,255,100),5); // draw center
+  
+  controller_points = sortPoints(y_values, x_values);
+
+  auto x = controller_points[1][0] + (controller_points[1][1] - controller_points[1][0])/2;
+  auto y = controller_points[0][0] + (controller_points[0][1] - controller_points[0][0])/2; 
+  cv::Point new_point;
+  new_point.x = x;
+  new_point.y = y;
+  circle(result_img, new_point, 5, cv::Scalar(255,0,255),5); // draw center
+
   putText(result_img, ss.str(), path_center + cv::Point2f(-25,25), cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(0,100,255)); // print angle
-  dist_diff = int(width/2) - path_center.x;
+  dist_diff = int(width/2) - new_point.x;
   return true;
 }
 
@@ -122,4 +140,22 @@ bool ImageProcessor::processImage(cv::Mat image, bool warped, cv::Mat &processed
     processed_img = image;
     return false;
   }
+}
+
+std::vector<std::vector<float>> ImageProcessor::sortPoints(std::vector<float> array_y, std::vector<float> array_x)
+{
+  std::vector<std::vector<float>> array_out(2,vector<float>(2,0)); 
+  vector< pair <float,float> > array_pair; 
+
+  for (size_t i = 0; i < array_y.size(); i++)
+    array_pair.push_back(make_pair(array_y[i],array_x[i]));
+
+  sort(array_pair.begin(), array_pair.end());
+
+  for (size_t i = 0; i < 2; i++)
+    array_out[0][i] = array_pair[i+2].first;
+  for (size_t i = 0; i < 2; i++)
+    array_out[1][i] = array_pair[i+2].second;
+  
+  return array_out;
 }
