@@ -12,6 +12,7 @@ extern "C"
 
 int main(int argc, char *argv[])
 {
+  /*Communication with Coppelia sim*/
   int clientID = simxStart((simxChar *)"127.0.0.1", 19997, true, true, 5000, 5);
   if (clientID != -1)
   {
@@ -30,58 +31,66 @@ int main(int argc, char *argv[])
   float *position, *orientation;
   int resolution[2];
   simxUChar* image;
+  /*Image processor object*/
   ImageProcessor img_processor;
-  PathFollowerController controller;
-  //simxGetObjectPosition(clientID, robot, -1, position, simx_opmode_blocking);
-  //simxGetObjectOrientation(clientID, robot, -1, orientation, simx_opmode_blocking);
-  simxGetObjectHandle(clientID, "Pioneer_p3dx_leftMotor", &left_motor, simx_opmode_blocking);
-  simxGetObjectHandle(clientID, "Pioneer_p3dx_rightMotor", &right_motor, simx_opmode_blocking);
-  simxGetObjectHandle(clientID, "Pioneer_p3dx", &robot, simx_opmode_blocking);
-  simxGetObjectHandle(clientID,"Vision_sensor", &camera, simx_opmode_blocking);
+  /*Controller object*/
+  PathFollowerController controller(0.3f, 0.331f, 0.25f); //Wheel radius, distance between wheels, linear velocity
+  //      simxGetObjectPosition(clientID, robot, -1, position, simx_opmode_blocking);
+  //      simxGetObjectOrientation(clientID, robot, -1, orientation, simx_opmode_blocking);
+  simxGetObjectHandle(clientID, "Pioneer_p3dx_leftMotor", &left_motor, simx_opmode_blocking);   //Left motor object
+  simxGetObjectHandle(clientID, "Pioneer_p3dx_rightMotor", &right_motor, simx_opmode_blocking); //Right motor object
+  simxGetObjectHandle(clientID, "Pioneer_p3dx", &robot, simx_opmode_blocking);                  //Robot object
+  simxGetObjectHandle(clientID,"Vision_sensor", &camera, simx_opmode_blocking);                 //Camera object
   simxGetVisionSensorImage(clientID,camera,resolution,&image,0,simx_opmode_streaming);
   
+  /*Start with speed equal to zero*/
   simxSetJointTargetVelocity(clientID, left_motor, 0.0f, simx_opmode_blocking);
   simxSetJointTargetVelocity(clientID, right_motor, 0.0f, simx_opmode_blocking);
   int iteracoes = 0;
+  /*Control loop*/
   while (simxGetConnectionId(clientID)!=-1 && iteracoes < 10e3)
   {
+    /*Get image*/
     int ret = simxGetVisionSensorImage(clientID,camera,resolution,&image,0,simx_opmode_buffer);
     iteracoes++;
-    //std::this_thread::sleep_for (std::chrono::seconds(1));
     if (ret != simx_return_ok) {
       #ifdef DEBUG
         std::cout << "[SIMULATION ERROR] - interacao " << iteracoes << std::endl;
       #endif
 			continue;
 		}
+    /*Convert simulation image to opencv image type*/
     cv::Mat channel(resolution[0], resolution[1], CV_8UC3, image);
-		//The image data read back is flipped vertically, the problem should be that the direction of the vertical coordinate axis of cvMat and v-rep is opposite, and the flip is normal
 		cv::flip(channel, channel, 0);
-                                 //The rgb channel is distributed when the image data read back, and cvMat defaults to bgr
 		cv::cvtColor(channel, channel, cv::COLOR_RGB2BGR);
     cv::Mat processed_img;
-    bool sts = img_processor.processImage(channel, true, processed_img);
+    /*Process image*/
+    bool sts = img_processor.processImage(channel, processed_img);
     int dist;
     float angle;
-    img_processor.getOutput(dist, angle);
-    #ifdef DEBUG
-      std::cout << "[DEBUG] dist_diff: " << dist << "  path_angle: " << angle << std::endl;
-    #endif
-    /*Controller*/
-    std::vector<float> Ww = controller.speed_control(float(dist), angle, 1);
-    #ifdef DEBUG
-      std::cout << "[DEBUG] W_right: " << Ww[0] << "  W_left:: " << Ww[1] << std::endl;
-    #endif
-    simxSetJointTargetVelocity(clientID, left_motor, Ww[1], simx_opmode_blocking);
-    simxSetJointTargetVelocity(clientID, right_motor, Ww[0], simx_opmode_blocking);
-
-		//cv::imshow( "original img",channel);
-    cv::imshow( "Processed img",processed_img);
+    if(sts)
+    {
+      /*Get image parameters*/
+      img_processor.getOutput(dist, angle);
+      #ifdef DEBUG
+        std::cout << "[DEBUG] dist_diff: " << dist << "  path_angle: " << angle << std::endl;
+      #endif
+      /*Controller*/
+      std::vector<float> Ww = controller.speed_control(float(dist), angle, 1);
+      #ifdef DEBUG
+        std::cout << "[DEBUG] W_right: " << Ww[0] << "  W_left:: " << Ww[1] << std::endl;
+      #endif
+      /*Set wheels speed*/
+      simxSetJointTargetVelocity(clientID, left_motor, Ww[1], simx_opmode_blocking);
+      simxSetJointTargetVelocity(clientID, right_motor, Ww[0], simx_opmode_blocking);
+      /*Print processed image*/
     
-		cv::waitKey(10);
+      cv::imshow( "Processed img",processed_img);
+      cv::waitKey(10);
+    }
     simxSynchronousTrigger(clientID);
   }
-
+  /* Set speed to zero*/
   simxSetJointTargetVelocity(clientID, left_motor, 0.0f, simx_opmode_blocking);
   simxSetJointTargetVelocity(clientID, right_motor, 0.0f, simx_opmode_blocking);
 

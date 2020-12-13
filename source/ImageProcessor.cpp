@@ -13,8 +13,6 @@ ImageProcessor::~ImageProcessor()
 
 void ImageProcessor::getWarpedImage(cv::Mat input_img, int offset_x, int offset_y, int offset_x_dst)
 {
-  //90 80 200
-  //Points for image transformation
   Point2f pointsScr[4];
   Point2f pointsDst[4];
   Mat lambda( 2, 4, CV_32FC1 );
@@ -87,7 +85,7 @@ bool ImageProcessor::getResultImage(cv::Mat input_img)
     path_angle = -(path_angle + 90);
 
   stringstream ss;   ss << path_angle; // convert float to string
-  circle(result_img, path_center, 5, cv::Scalar(10,255,100),5); // draw center
+  circle(result_img, path_center, 5, cv::Scalar(10,255,100),5); // draw rectangle centroid
   
   controller_points = sortPoints(y_values, x_values);
 
@@ -96,7 +94,7 @@ bool ImageProcessor::getResultImage(cv::Mat input_img)
   cv::Point new_point;
   new_point.x = x;
   new_point.y = y;
-  circle(result_img, new_point, 5, cv::Scalar(255,0,255),5); // draw center
+  circle(result_img, new_point, 5, cv::Scalar(255,0,255),5); // draw rectangle center of down side
 
   putText(result_img, ss.str(), path_center + cv::Point2f(-25,25), cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(0,100,255)); // print angle
   dist_diff = int(width/2) - new_point.x;
@@ -107,7 +105,6 @@ void ImageProcessor::getOutput(int &dist_diff_out, float &path_angle_out)
 {
   dist_diff_out = dist_diff;
   path_angle_out = path_angle;
-  //std::cout << "[DEBUG] dist_diff: " << dist_diff << "  path_angle: " << path_angle << std::endl;
 }
 
 void ImageProcessor::printAll() 
@@ -122,10 +119,9 @@ void ImageProcessor::printAll()
   waitKey(0);
 }
 
-bool ImageProcessor::processImage(cv::Mat image, bool warped, cv::Mat &processed_img)
+bool ImageProcessor::processImage(cv::Mat image, cv::Mat &processed_img)
 {
   original_img = image;
-  //std::cout << "Rows: " << original_img.rows << " Colums: " << original_img.cols << std::endl;
   getWarpedImage(original_img,20,20,60);
   getMask(warped_img);
   bool ret = getResultImage(warped_img);
