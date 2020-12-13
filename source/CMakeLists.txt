@@ -35,5 +35,4 @@ add_definitions(-DMAX_EXT_API_CONNECTIONS=255 -DNON_MATLAB_PARSING -DDO_NOT_USE_
 add_definitions(-std=c++11)
 
 add_executable(path_follower ${SOURCES})
-#add_executable(path_follower ${MAIN1})
 target_link_libraries( path_follower ${OpenCV_LIBS} )

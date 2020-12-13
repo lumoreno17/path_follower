@@ -12,7 +12,7 @@ Regarding the processed image, the red rectangle is always oriented to the path.
 The pink circle marks the center of the rectangle down side to enable the control based on the distance between the center of view and the path center. 
 
 
-COLOCAR IMAGEM AQUI
+![Processed Frame](/media/processed_frame.png)
 
 ## PathFollowerController
 Based on the inputs received, it applies a weighted sum. It means the input parameters are multiplied by a defined configurable weight and the summed. After that a proportional constant is applied and the final value is the calculated angular speed of the robot. With this angular speed and the received linear velocity it calculates the speed that shall be applied in each wheel.
@@ -33,5 +33,5 @@ $ ./path_follower
 
 ## Video
 
-COLOCAR VIDEO AQUI
+![Simulation Record](/media/simulation.gif)
 

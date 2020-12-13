@@ -18,8 +18,8 @@
 #include <iostream>
 #include "simConst.h"
 
-#define LOWER_YELLOW_1 10
-#define LOWER_YELLOW_2 50
+#define LOWER_YELLOW_1 15
+#define LOWER_YELLOW_2 75
 #define LOWER_YELLOW_3 0
 
 #define UPPER_YELLOW_1 50

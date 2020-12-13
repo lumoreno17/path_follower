@@ -16,7 +16,9 @@ int main(int argc, char *argv[])
   int clientID = simxStart((simxChar *)"127.0.0.1", 19997, true, true, 5000, 5);
   if (clientID != -1)
   {
-    simxSynchronous(clientID, true);
+    #ifdef SYNCHRONUS
+      simxSynchronous(clientID, true);
+    #endif
     simxStartSimulation(clientID, simx_opmode_oneshot_wait);
     printf("Connected to remote API server\n");
     simxAddStatusbarMessage(clientID, "Hello CoppeliaSim!", simx_opmode_oneshot);
@@ -76,7 +78,7 @@ int main(int argc, char *argv[])
         std::cout << "[DEBUG] dist_diff: " << dist << "  path_angle: " << angle << std::endl;
       #endif
       /*Controller*/
-      std::vector<float> Ww = controller.speed_control(float(dist), angle, 1);
+      std::vector<float> Ww = controller.speed_control(float(dist), angle, 0.65);
       #ifdef DEBUG
         std::cout << "[DEBUG] W_right: " << Ww[0] << "  W_left:: " << Ww[1] << std::endl;
       #endif
@@ -88,7 +90,9 @@ int main(int argc, char *argv[])
       cv::imshow( "Processed img",processed_img);
       cv::waitKey(10);
     }
-    simxSynchronousTrigger(clientID);
+    #ifdef SYNCHRONUS
+      simxSynchronousTrigger(clientID);
+    #endif
   }
   /* Set speed to zero*/
   simxSetJointTargetVelocity(clientID, left_motor, 0.0f, simx_opmode_blocking);
