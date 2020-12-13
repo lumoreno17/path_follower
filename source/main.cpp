@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
   int clientID = simxStart((simxChar *)"127.0.0.1", 19997, true, true, 5000, 5);
   if (clientID != -1)
   {
-    #ifdef SYNCHRONUS
+    #ifdef SYNCHRONOUS
       simxSynchronous(clientID, true);
     #endif
     simxStartSimulation(clientID, simx_opmode_oneshot_wait);
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
       cv::imshow( "Processed img",processed_img);
       cv::waitKey(10);
     }
-    #ifdef SYNCHRONUS
+    #ifdef SYNCHRONOUS
       simxSynchronousTrigger(clientID);
     #endif
   }

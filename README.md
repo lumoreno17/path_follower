@@ -26,9 +26,16 @@ $ cd build
 $ cmake ../source & make
 ```
 
-After this, open Coppelia Robotics simulator and load the scene (*<repository_path>/simulation/path_follower.ttt*). Then run:
+After this, open Coppelia Robotics simulator and load the scene (*<repository_path>/simulation/pioneer_yellow_path.ttt*). Then run:
 ```shell
 $ ./path_follower
+```
+## Compile Options
+
+It is possible to set between two types of simulation connections (synchronous/asychronous) and between debug/non-debug modes. To enable **DEBUG** and **SYNCHRONOUS** add the following macros on the CMakeList.txt.
+
+```cmake
+add_definitions(-DMAX_EXT_API_CONNECTIONS=255 -DNON_MATLAB_PARSING -DDO_NOT_USE_SHARED_MEMORY -DDEBUG -DSYNCHRONOUS)
 ```
 
 ## Video
